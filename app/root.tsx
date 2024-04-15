@@ -4,7 +4,14 @@ import {
   Meta,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from '@remix-run/react';
+import { type LinksFunction } from '@remix-run/node';
+
+import applyStylesHref from './app.css';
+
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: applyStylesHref },
+];
 
 export default function App() {
   return (
