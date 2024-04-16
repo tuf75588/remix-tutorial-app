@@ -1,17 +1,23 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
-import invariant from "tiny-invariant";
+import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
+import { json, redirect } from '@remix-run/node';
+import { Form, useLoaderData } from '@remix-run/react';
+import invariant from 'tiny-invariant';
 
-import { getContact } from "../data";
+import { getContact, updateContact } from '../data';
 
-export const loader = async ({
-  params,
-}: LoaderFunctionArgs) => {
-  invariant(params.contactId, "Missing contactId param");
+export const action = async ({ params, request }: ActionFunctionArgs) => {
+  invariant(params.contactId, 'Missing contact ID');
+  const formData = await request.formData();
+  const updates = Object.fromEntries(formData);
+  await updateContact(params.contactId, updates);
+  return redirect(`/contacts/${params.contactId}`);
+};
+
+export const loader = async ({ params }: LoaderFunctionArgs) => {
+  invariant(params.contactId, 'Missing contactId param');
   const contact = await getContact(params.contactId);
   if (!contact) {
-    throw new Response("Not Found", { status: 404 });
+    throw new Response('Not Found', { status: 404 });
   }
   return json({ contact });
 };
@@ -59,11 +65,7 @@ export default function EditContact() {
       </label>
       <label>
         <span>Notes</span>
-        <textarea
-          defaultValue={contact.notes}
-          name="notes"
-          rows={6}
-        />
+        <textarea defaultValue={contact.notes} name="notes" rows={6} />
       </label>
       <p>
         <button type="submit">Save</button>

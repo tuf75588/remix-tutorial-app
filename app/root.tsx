@@ -8,7 +8,7 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import { type LinksFunction, json } from '@remix-run/node';
+import { type LinksFunction, json, redirect } from '@remix-run/node';
 
 import applyStylesHref from './app.css?url';
 import { createEmptyContact, getContacts } from './data';
@@ -24,7 +24,7 @@ export const loader = async () => {
 
 export const action = async () => {
   const contact = await createEmptyContact();
-  return json({ contact });
+  return redirect(`/contacts/${contact.id}/edit`);
 };
 
 export default function App() {
