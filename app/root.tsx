@@ -9,7 +9,13 @@ import {
   ScrollRestoration,
   useLoaderData,
 } from '@remix-run/react';
-import { type LinksFunction, json, redirect } from '@remix-run/node';
+import { useEffect } from 'react';
+import {
+  type LinksFunction,
+  json,
+  redirect,
+  LoaderFunctionArgs,
+} from '@remix-run/node';
 
 import applyStylesHref from './app.css?url';
 import { createEmptyContact, getContacts } from './data';
@@ -18,9 +24,11 @@ export const links: LinksFunction = () => [
   { rel: 'stylesheet', href: applyStylesHref },
 ];
 
-export const loader = async () => {
-  const contacts = await getContacts();
-  return json({ contacts });
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const url = new URL(request.url);
+  const searchParams = url.searchParams.get('q');
+  const contacts = await getContacts(searchParams);
+  return json({ contacts, searchParams });
 };
 
 export const action = async () => {
@@ -29,9 +37,15 @@ export const action = async () => {
 };
 
 export default function App() {
-  const { contacts } = useLoaderData<typeof loader>();
+  const { contacts, searchParams } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-
+  useEffect(() => {
+    const searchField = document.getElementById('q');
+    if (searchField instanceof HTMLInputElement) {
+      searchField.value = searchParams || '';
+    }
+  }, [searchParams]);
+  
   return (
     <html lang="en">
       <head>
@@ -49,6 +63,7 @@ export default function App() {
                 id="q"
                 aria-label="Search contacts"
                 placeholder="Search"
+                defaultValue={searchParams || ''}
                 type="search"
                 name="q"
               />
