@@ -8,6 +8,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useSubmit,
 } from '@remix-run/react';
 import { useEffect } from 'react';
 import {
@@ -39,13 +40,17 @@ export const action = async () => {
 export default function App() {
   const { contacts, searchParams } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
+  const searching =
+    navigation.location &&
+    new URLSearchParams(navigation.location.search).has('q');
+  const submit = useSubmit();
   useEffect(() => {
     const searchField = document.getElementById('q');
     if (searchField instanceof HTMLInputElement) {
       searchField.value = searchParams || '';
     }
   }, [searchParams]);
-  
+
   return (
     <html lang="en">
       <head>
@@ -58,16 +63,21 @@ export default function App() {
         <div id="sidebar">
           <h1>Remix Contacts</h1>
           <div>
-            <Form id="search-form" role="search">
+            <Form
+              id="search-form"
+              role="search"
+              onChange={(event) => submit(event.currentTarget)}
+            >
               <input
                 id="q"
+                className={searching ? 'loading' : ''}
                 aria-label="Search contacts"
                 placeholder="Search"
                 defaultValue={searchParams || ''}
                 type="search"
                 name="q"
               />
-              <div id="search-spinner" aria-hidden hidden={true} />
+              <div id="search-spinner" aria-hidden hidden={!searching} />
             </Form>
             <Form method="post">
               <button type="submit">New</button>
